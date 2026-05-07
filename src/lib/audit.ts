@@ -1,4 +1,5 @@
 export type AuditResult = {
+  tool: string;
   recommendation: string;
   monthlySavings: number;
   annualSavings: number;
@@ -11,11 +12,12 @@ export function generateAudit(
   teamSize: number
 ): AuditResult {
   if (
-    toolName.toLowerCase().includes("chatgpt") &&
+    toolName.toLowerCase().includes("chatgpt team") &&
     teamSize <= 2 &&
     monthlySpend > 50
   ) {
     return {
+      tool: toolName,
       recommendation: "Downgrade to ChatGPT Plus",
       monthlySavings: 30,
       annualSavings: 360,
@@ -30,6 +32,7 @@ export function generateAudit(
     monthlySpend > 60
   ) {
     return {
+      tool: toolName,
       recommendation: "Switch to Cursor Pro",
       monthlySavings: 40,
       annualSavings: 480,
@@ -38,7 +41,22 @@ export function generateAudit(
     };
   }
 
+  if (
+    toolName.toLowerCase().includes("copilot") &&
+    monthlySpend > 40
+  ) {
+    return {
+      tool: toolName,
+      recommendation: "Use GitHub Copilot Business",
+      monthlySavings: 20,
+      annualSavings: 240,
+      reason:
+        "Enterprise plans are often unnecessary for smaller teams.",
+    };
+  }
+
   return {
+    tool: toolName,
     recommendation: "Current setup looks optimized",
     monthlySavings: 0,
     annualSavings: 0,

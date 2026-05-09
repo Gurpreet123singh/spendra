@@ -7,7 +7,7 @@ export default function Home() {
         <Link
   href="/"
   className="absolute left-8 top-6 text-xl font-bold">
-  BurnLens
+  SPENDRA
 </Link>
         <div className="mb-6 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-300">
           Free AI spend audit for startup teams
@@ -18,7 +18,7 @@ export default function Home() {
         </h1>
 
         <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-400">
-          BurnLens reviews your AI tool stack, finds overpriced plans, and shows
+          SPENDRA reviews your AI tool stack, finds overpriced plans, and shows
           how much your team can save every month.
         </p>
 

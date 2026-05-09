@@ -97,7 +97,7 @@ export default function AuditPage() {
       <Link
   href="/"
   className="absolute left-8 top-6 text-xl font-bold">
-  BurnLens
+  SPENDRA
 </Link>
       <div className="mx-auto max-w-3xl">
         <h1 className="text-4xl font-bold">AI Spend Audit</h1>

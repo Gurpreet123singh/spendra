@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "BurnLens — AI Spend Audit",
+  title: "SPENDRA — AI Spend Audit",
   description:
     "Analyze AI tool spending, uncover savings opportunities, and generate shareable audit reports.",
 };

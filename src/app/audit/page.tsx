@@ -251,13 +251,25 @@ export default function AuditPage() {
           </button>
 
           <div className="space-y-6">
-            {results.map((result, index) => (
-              <AuditResultCard
-                key={index}
-                result={result}
-              />
-            ))}
-          </div>
+  {results.length === 0 ? (
+    <div className="rounded-3xl border border-dashed border-white/10 bg-white/[0.02] p-10 text-center">
+      <h3 className="text-2xl font-semibold">
+        No audits generated yet
+      </h3>
+
+      <p className="mt-3 text-zinc-400">
+        Generate your first AI spend audit to uncover potential savings.
+      </p>
+    </div>
+  ) : (
+    results.map((result, index) => (
+      <AuditResultCard
+        key={index}
+        result={result}
+      />
+    ))
+  )}
+</div>
         </div>
       </div>
     </main>

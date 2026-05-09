@@ -4,6 +4,9 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-black text-white">
       <section className="mx-auto flex min-h-screen max-w-6xl flex-col items-center justify-center px-6 text-center">
+        <div className="absolute left-8 top-6 text-xl font-bold">
+  BurnLens
+</div>
         <div className="mb-6 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-300">
           Free AI spend audit for startup teams
         </div>
@@ -27,10 +30,10 @@ export default function Home() {
           </a>
 
           <a
-            href="#how-it-works"
+            href="/audit"
             className="inline-flex items-center justify-center rounded-full border border-white/15 px-6 py-3 font-semibold text-white transition hover:bg-white/10"
           >
-            See how it works
+            Try the audit
           </a>
         </div>
 

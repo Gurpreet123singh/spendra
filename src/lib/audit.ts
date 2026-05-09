@@ -9,65 +9,115 @@ export type AuditResult = {
   reason: string;
 };
 
+type PricingRule = {
+  estimatedPricePerUser: number;
+  cheaperAlternative?: string;
+  cheaperAlternativePrice?: number;
+};
+
+const pricingRules: Record<string, PricingRule> = {
+  "ChatGPT Plus": {
+    estimatedPricePerUser: 20,
+  },
+  "ChatGPT Team": {
+    estimatedPricePerUser: 30,
+    cheaperAlternative: "ChatGPT Plus",
+    cheaperAlternativePrice: 20,
+  },
+  "Cursor Pro": {
+    estimatedPricePerUser: 20,
+  },
+  "Cursor Business": {
+    estimatedPricePerUser: 40,
+    cheaperAlternative: "Cursor Pro",
+    cheaperAlternativePrice: 20,
+  },
+  "Claude Team": {
+    estimatedPricePerUser: 35,
+  },
+  "GitHub Copilot Enterprise": {
+    estimatedPricePerUser: 39,
+    cheaperAlternative: "GitHub Copilot Business",
+    cheaperAlternativePrice: 19,
+  },
+  "Gemini Pro": {
+    estimatedPricePerUser: 20,
+  },
+};
+
 export function generateAudit(
   toolName: string,
   monthlySpend: number,
   teamSize: number
 ): AuditResult {
-  if (
-    toolName.toLowerCase().includes("chatgpt team") &&
-    teamSize <= 2 &&
-    monthlySpend > 50
-  ) {
+  const rule = pricingRules[toolName];
+
+  if (!rule) {
     return {
       tool: toolName,
-      monthlySpend: monthlySpend,
-      teamSize: teamSize,
-      recommendation: "Downgrade to ChatGPT Plus",
-      monthlySavings: 30,
-      annualSavings: 360,
-      reason: "Small teams usually do not require ChatGPT Team features.",
+      monthlySpend,
+      teamSize,
+      recommendation: "Manual review recommended",
+      monthlySavings: 0,
+      annualSavings: 0,
+      reason:
+        "We do not have enough pricing data for this tool yet, so this stack should be reviewed manually.",
+    };
+  }
+
+  const expectedSpend = rule.estimatedPricePerUser * teamSize;
+  const overspendThreshold = expectedSpend * 1.3;
+
+  if (monthlySpend > overspendThreshold) {
+    const monthlySavings = Math.max(
+      0,
+      Math.round(monthlySpend - expectedSpend)
+    );
+
+    return {
+      tool: toolName,
+      monthlySpend,
+      teamSize,
+      recommendation: "Review billing against estimated market pricing",
+      monthlySavings,
+      annualSavings: monthlySavings * 12,
+      reason: `Based on estimated public pricing, this setup should cost around $${expectedSpend}/month for ${teamSize} user(s). Your entered spend is significantly higher, so the billing may include unused seats, add-ons, tax, or overestimated usage.`,
     };
   }
 
   if (
-    toolName.toLowerCase().includes("cursor business") &&
-    teamSize <= 3 &&
-    monthlySpend > 60
+    rule.cheaperAlternative &&
+    rule.cheaperAlternativePrice &&
+    teamSize <= 3
   ) {
-    return {
-      tool: toolName,
-      monthlySpend: monthlySpend,
-      teamSize: teamSize,
-      recommendation: "Switch to Cursor Pro",
-      monthlySavings: 40,
-      annualSavings: 480,
-      reason: "Cursor Business may be unnecessary for small developer teams.",
-    };
-  }
+    const alternativeSpend = rule.cheaperAlternativePrice * teamSize;
 
-  if (
-    toolName.toLowerCase().includes("copilot enterprise") &&
-    monthlySpend > 40
-  ) {
-    return {
-      tool: toolName,
-      monthlySpend: monthlySpend,
-      teamSize: teamSize,
-      recommendation: "Use GitHub Copilot Business",
-      monthlySavings: 20,
-      annualSavings: 240,
-      reason: "Enterprise plans are often unnecessary for smaller teams.",
-    };
+    if (alternativeSpend < monthlySpend) {
+      const monthlySavings = Math.max(
+        0,
+        Math.round(monthlySpend - alternativeSpend)
+      );
+
+      return {
+        tool: toolName,
+        monthlySpend,
+        teamSize,
+        recommendation: `Consider ${rule.cheaperAlternative}`,
+        monthlySavings,
+        annualSavings: monthlySavings * 12,
+        reason: `For a small team of ${teamSize}, ${rule.cheaperAlternative} may cover the same core workflow at an estimated $${alternativeSpend}/month.`,
+      };
+    }
   }
 
   return {
     tool: toolName,
-    monthlySpend: monthlySpend,
-    teamSize: teamSize,
+    monthlySpend,
+    teamSize,
     recommendation: "Current setup looks optimized",
     monthlySavings: 0,
     annualSavings: 0,
-    reason: "We could not identify any major overspending in your stack.",
+    reason:
+      "Your entered spend is close to estimated public market pricing for this tool and team size.",
   };
 }

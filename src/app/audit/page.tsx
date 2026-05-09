@@ -96,9 +96,8 @@ export default function AuditPage() {
     <main className="min-h-screen bg-black px-6 py-20 text-white">
       <Link
   href="/"
-  className="fixed left-6 top-6 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-zinc-300 transition hover:bg-white/10 hover:text-white"
->
-  ← Back to Home
+  className="absolute left-8 top-6 text-xl font-bold">
+  BurnLens
 </Link>
       <div className="mx-auto max-w-3xl">
         <h1 className="text-4xl font-bold">AI Spend Audit</h1>

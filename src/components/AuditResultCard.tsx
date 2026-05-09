@@ -1,4 +1,5 @@
 import { AuditResult } from "@/lib/audit";
+import Link from "next/link";
 
 type Props = {
   result: AuditResult;
@@ -75,6 +76,15 @@ export default function AuditResultCard({
             {result.reason}
           </p>
         </div>
+        {result.id && (
+  <Link
+    href={`/share/${result.id}`}
+    target="_blank"
+    className="mt-6 inline-flex rounded-full bg-white px-5 py-3 font-semibold text-black transition hover:bg-zinc-200"
+  >
+    Share Report
+  </Link>
+)}
       </div>
     </div>
   );

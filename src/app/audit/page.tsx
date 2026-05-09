@@ -3,14 +3,18 @@
 import AuditResultCard from "@/components/AuditResultCard";
 import { generateAudit, AuditResult } from "@/lib/audit";
 import { generateSummary } from "@/lib/summary";
-import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { useEffect, useState } from "react";
 
 export default function AuditPage() {
   const [toolName, setToolName] = useState("");
   const [monthlySpend, setMonthlySpend] = useState("");
   const [teamSize, setTeamSize] = useState("");
   const [results, setResults] = useState<AuditResult[]>([]);
+
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const savedTool = localStorage.getItem("toolName");
@@ -28,11 +32,16 @@ export default function AuditPage() {
     localStorage.setItem("teamSize", teamSize);
   }, [toolName, monthlySpend, teamSize]);
 
-const handleAudit = async () => {
-      if (!toolName || !monthlySpend || !teamSize) {
-      alert("Please fill all fields before generating the audit.");
+  const handleAudit = async () => {
+    setError("");
+    setSuccess("");
+
+    if (!toolName || !monthlySpend || !teamSize) {
+      setError("Please fill all fields before generating the audit.");
       return;
     }
+
+    setLoading(true);
 
     const audit = generateAudit(
       toolName,
@@ -40,15 +49,30 @@ const handleAudit = async () => {
       Number(teamSize)
     );
 
-    setResults((prev) => [audit, ...prev]);
-    await supabase.from("audits").insert({
-  tool_name: toolName,
-  monthly_spend: Number(monthlySpend),
-  team_size: Number(teamSize),
-  recommendation: audit.recommendation,
-  monthly_savings: audit.monthlySavings,
-  annual_savings: audit.annualSavings,
-});
+    const { data } = await supabase
+      .from("audits")
+      .insert({
+        tool_name: toolName,
+        monthly_spend: Number(monthlySpend),
+        team_size: Number(teamSize),
+        recommendation: audit.recommendation,
+        monthly_savings: audit.monthlySavings,
+        annual_savings: audit.annualSavings,
+      })
+      .select()
+      .single();
+
+    setResults((prev) => [
+      {
+        ...audit,
+        id: data?.id,
+      },
+      ...prev,
+    ]);
+
+    setLoading(false);
+
+    setSuccess("Audit generated successfully.");
 
     setToolName("");
     setMonthlySpend("");
@@ -85,6 +109,7 @@ const handleAudit = async () => {
             <div className="mt-4 grid gap-6 md:grid-cols-2">
               <div>
                 <p className="text-zinc-300">Monthly Savings</p>
+
                 <h2 className="mt-2 text-5xl font-bold text-green-400">
                   ${totalMonthlySavings}
                 </h2>
@@ -92,6 +117,7 @@ const handleAudit = async () => {
 
               <div>
                 <p className="text-zinc-300">Annual Savings</p>
+
                 <h2 className="mt-2 text-5xl font-bold text-green-400">
                   ${totalAnnualSavings}
                 </h2>
@@ -103,7 +129,9 @@ const handleAudit = async () => {
                 AI Summary
               </p>
 
-              <p className="mt-3 leading-7 text-zinc-200">{summary}</p>
+              <p className="mt-3 leading-7 text-zinc-200">
+                {summary}
+              </p>
             </div>
 
             {totalMonthlySavings >= 500 && (
@@ -127,7 +155,9 @@ const handleAudit = async () => {
 
         <div className="mt-10 space-y-6">
           <div>
-            <label className="mb-2 block text-sm font-medium">AI Tool</label>
+            <label className="mb-2 block text-sm font-medium">
+              AI Tool
+            </label>
 
             <select
               value={toolName}
@@ -137,27 +167,34 @@ const handleAudit = async () => {
               <option className="bg-black text-white" value="">
                 Select a tool
               </option>
+
               <option className="bg-black text-white" value="ChatGPT Team">
                 ChatGPT Team
               </option>
+
               <option className="bg-black text-white" value="ChatGPT Plus">
                 ChatGPT Plus
               </option>
+
               <option className="bg-black text-white" value="Cursor Business">
                 Cursor Business
               </option>
+
               <option className="bg-black text-white" value="Cursor Pro">
                 Cursor Pro
               </option>
+
               <option className="bg-black text-white" value="Claude Team">
                 Claude Team
               </option>
+
               <option
                 className="bg-black text-white"
                 value="GitHub Copilot Enterprise"
               >
                 GitHub Copilot Enterprise
               </option>
+
               <option className="bg-black text-white" value="Gemini Pro">
                 Gemini Pro
               </option>
@@ -179,7 +216,9 @@ const handleAudit = async () => {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-medium">Team Size</label>
+            <label className="mb-2 block text-sm font-medium">
+              Team Size
+            </label>
 
             <input
               type="number"
@@ -190,17 +229,33 @@ const handleAudit = async () => {
             />
           </div>
 
+          {error && (
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="rounded-2xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-300">
+              {success}
+            </div>
+          )}
+
           <button
             type="button"
             onClick={handleAudit}
-            className="w-full cursor-pointer rounded-2xl bg-white py-4 font-semibold text-black transition hover:bg-zinc-200"
+            disabled={loading}
+            className="w-full cursor-pointer rounded-2xl bg-white py-4 font-semibold text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Generate Audit
+            {loading ? "Generating Audit..." : "Generate Audit"}
           </button>
 
           <div className="space-y-6">
             {results.map((result, index) => (
-              <AuditResultCard key={index} result={result} />
+              <AuditResultCard
+                key={index}
+                result={result}
+              />
             ))}
           </div>
         </div>

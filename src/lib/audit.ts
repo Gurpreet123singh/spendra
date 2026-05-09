@@ -1,4 +1,5 @@
 export type AuditResult = {
+  id?: number;
   tool: string;
   monthlySpend: number;
   teamSize: number;
